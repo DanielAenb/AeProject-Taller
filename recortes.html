@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+<meta name="theme-color" content="#FE0557" />
+<title>Recortes · Ae Project .studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/base.css" />
+<link rel="stylesheet" href="assets/recortes.css" />
+</head>
+
+<body>
+
+<header class="app-header">
+  <a href="index.html" class="brand">
+    <span class="brand-dot"></span>
+    <span class="brand-name">Ae Project</span>
+    <span class="brand-tld">.studio</span>
+  </a>
+  <span class="tool-name">Recortes</span>
+  <div class="spacer"></div>
+
+  <div class="actions">
+    <span class="status-pill" id="statusPill" hidden>
+      <span class="sp-dot"></span>
+      <span id="statusText">Cargando…</span>
+    </span>
+    <button class="btn btn-ghost btn-sm" id="btnReset" hidden>
+      <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+      <span class="label-hide">Empezar de nuevo</span>
+    </button>
+    <button class="theme-toggle" id="themeToggle" aria-label="Cambiar tema">
+      <svg class="icon icon-moon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      <svg class="icon icon-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+    </button>
+  </div>
+</header>
+
+<main class="rec-main">
+
+  <!-- PANTALLA 1 · CARGA -->
+  <section class="scr" id="scrEmpty">
+    <div class="empty-hero">
+      <div class="eh-icon">
+        <svg viewBox="0 0 24 24"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><line x1="20" y1="4" x2="8.12" y2="15.88"/><line x1="14.47" y1="14.48" x2="20" y2="20"/><line x1="8.12" y1="8.12" x2="12" y2="12"/></svg>
+      </div>
+      <h1 class="eh-title">Recortes</h1>
+      <p class="eh-desc">Sube varios videos, recorta inicio y final, y expórtalos de golpe. Todo se procesa en tu dispositivo.</p>
+    </div>
+
+    <div class="drop-zone" id="dropZone">
+      <svg class="dz-icon" viewBox="0 0 24 24"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+      <div class="dz-title">Arrastra videos aquí</div>
+      <div class="dz-sub">o</div>
+      <label for="fileInput" class="btn btn-primary btn-lg" style="cursor:pointer;">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+        Seleccionar videos
+      </label>
+      <div class="dz-hint">MP4, MOV, WebM · idealmente &lt; 100 MB por video</div>
+    </div>
+
+    <!-- Justo debajo del drop-zone, dentro de #scrEmpty -->
+<div style="text-align: center; margin-top: 16px;">
+  <button class="btn btn-secondary btn-sm" id="btnImportJSON">
+    <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M12 21V9M7 14l5-5 5 5M5 3h14"/></svg>
+    Importar respaldo (.json)
+  </button>
+</div>
+
+    <div class="session-resume" id="sessionResume" hidden>
+      <div class="sr-head">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><polyline points="21 3 21 9 15 9"/></svg>
+        <span>Sesión anterior detectada</span>
+      </div>
+      <div class="sr-body" id="sessionResumeBody"></div>
+      <div class="sr-actions">
+        <button class="btn btn-ghost btn-sm" id="btnDiscardSession">Descartar</button>
+        <button class="btn btn-primary btn-sm" id="btnResumeSession">Reanudar</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- PANTALLA 2 · EDITOR -->
+  <section class="scr" id="scrEditor" hidden>
+
+    <div class="editor-top">
+      <div class="et-info">
+        <span class="et-counter" id="etCounter">Video 1 de 5</span>
+        <span class="et-filename" id="etFilename">—</span>
+      </div>
+      <div class="et-actions">
+        <button class="btn btn-ghost btn-sm" id="btnSkip" title="Saltar este video">
+          <svg class="icon icon-sm" viewBox="0 0 24 24"><polyline points="5 4 15 12 5 20"/><line x1="19" y1="5" x2="19" y2="19"/></svg>
+          Saltar
+        </button>
+      </div>
+    </div>
+
+    <div class="editor-grid">
+      <div class="editor-main">
+
+        <div class="video-stage">
+          <video id="video" playsinline preload="metadata"></video>
+          <div class="vs-overlay" id="vsOverlay">
+            <span id="vsTime">0:00.0</span>
+          </div>
+          <!-- Badges IN / OUT sobre el video -->
+          <div class="vs-badges">
+            <div class="vs-badge vs-badge-in" id="badgeIn">
+              <span class="vb-label">IN</span>
+              <span class="vb-time" id="badgeInTime">00:00.0</span>
+            </div>
+            <div class="vs-badge vs-badge-out" id="badgeOut">
+              <span class="vb-label">OUT</span>
+              <span class="vb-time" id="badgeOutTime">00:00.0</span>
+            </div>
+          </div>
+          <!-- Overlay play/pause feedback -->
+          <div class="vs-play-overlay" id="playOverlay" hidden>
+            <svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="6 3 20 12 6 21"/></svg>
+          </div>
+        </div>
+
+        <div class="transport">
+          <button class="tp-btn" id="btnPlay" aria-label="Reproducir / pausar">
+            <svg class="icon" id="iconPlay" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="6 3 20 12 6 21"/></svg>
+            <svg class="icon" id="iconPause" viewBox="0 0 24 24" fill="currentColor" stroke="none" hidden><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+          </button>
+          <button class="tp-btn" id="btnBack1" aria-label="Atrás 1s">
+            <svg class="icon" viewBox="0 0 24 24"><polyline points="11 17 6 12 11 7"/><polyline points="18 17 13 12 18 7"/></svg>
+          </button>
+          <button class="tp-btn" id="btnFwd1" aria-label="Adelante 1s">
+            <svg class="icon" viewBox="0 0 24 24"><polyline points="13 17 18 12 13 7"/><polyline points="6 17 11 12 6 7"/></svg>
+          </button>
+          <span class="tp-time" id="tpTime">0:00.00</span>
+          <div class="spacer"></div>
+          <button class="tp-toggle" id="btnAudio" aria-pressed="true" title="Audio on/off">
+            <svg class="icon" id="iconAudioOn" viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+            <svg class="icon" id="iconAudioOff" viewBox="0 0 24 24" hidden><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
+            <span id="audioLabel">Audio</span>
+          </button>
+        </div>
+
+        <div class="timeline" id="timeline">
+          <div class="tl-track" id="tlTrack">
+            <div class="tl-range" id="tlRange"></div>
+            <div class="tl-playhead" id="tlPlayhead"></div>
+            <div class="tl-handle tl-handle-start" id="tlStart" data-handle="start"></div>
+            <div class="tl-handle tl-handle-end" id="tlEnd" data-handle="end"></div>
+          </div>
+        </div>
+
+        <!-- Ajuste fino ±0.1s / ±1s (esencial en móvil) -->
+        <div class="fine-tune">
+          <button class="ft-btn" id="ftBack1">
+            <svg viewBox="0 0 24 24"><polyline points="11 17 6 12 11 7"/><polyline points="18 17 13 12 18 7"/></svg>
+            <span>−1s</span>
+          </button>
+          <button class="ft-btn" id="ftBack01">
+            <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+            <span>−0.1s</span>
+          </button>
+          <button class="ft-btn" id="ftFwd01">
+            <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+            <span>+0.1s</span>
+          </button>
+          <button class="ft-btn" id="ftFwd1">
+            <svg viewBox="0 0 24 24"><polyline points="13 17 18 12 13 7"/><polyline points="6 17 11 12 6 7"/></svg>
+            <span>+1s</span>
+          </button>
+        </div>
+
+        <div class="marks-info">
+          <div class="mi-cell">
+            <span class="mi-label">Inicio</span>
+            <span class="mi-value" id="miStart">00:00.0</span>
+          </div>
+          <div class="mi-cell">
+            <span class="mi-label">Fin</span>
+            <span class="mi-value" id="miEnd">00:00.0</span>
+          </div>
+          <div class="mi-cell">
+            <span class="mi-label">Duración</span>
+            <span class="mi-value mi-accent" id="miDur">00:00.0</span>
+          </div>
+        </div>
+
+        <div class="mark-actions">
+          <button class="mark-btn mark-btn-in" id="btnMarkIn">
+            <svg class="icon" viewBox="0 0 24 24"><polyline points="4 8 4 4 8 4"/><line x1="4" y1="4" x2="12" y2="12"/><line x1="4" y1="20" x2="20" y2="20"/></svg>
+            Marcar inicio
+          </button>
+          <button class="mark-btn mark-btn-out" id="btnMarkOut">
+            <svg class="icon" viewBox="0 0 24 24"><polyline points="20 8 20 4 16 4"/><line x1="20" y1="4" x2="12" y2="12"/><line x1="4" y1="20" x2="20" y2="20"/></svg>
+            Marcar fin
+          </button>
+          <button class="mark-btn mark-btn-ghost" id="btnResetMarks">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7"/><polyline points="3 4 3 10 9 10"/></svg>
+            Resetear
+          </button>
+        </div>
+
+        <div class="save-actions">
+          <button class="btn btn-secondary btn-lg" id="btnAddAnother">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+            Otro clip
+          </button>
+          <button class="btn btn-primary btn-lg" id="btnSaveNext">
+            <svg class="icon" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+            Guardar y siguiente
+          </button>
+        </div>
+      </div>
+
+      <aside class="editor-side">
+        <div class="side-head">
+          <span class="sh-title">Clips guardados</span>
+          <span class="sh-count" id="clipsCount">0</span>
+        </div>
+        <div class="clips-list" id="clipsList"></div>
+        <div class="side-foot">
+          <button class="btn btn-secondary btn-sm" id="btnGoExport" style="width:100%" disabled>
+            <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>
+            Exportar clips
+          </button>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- PANTALLA 3 · EXPORTAR -->
+<section class="scr" id="scrExport" hidden>
+  <div class="export-head">
+    <h2 class="ex-title">Listo para exportar</h2>
+    <p class="ex-desc" id="exSummary">—</p>
+  </div>
+
+  <div class="export-globals">
+    <div class="eg-row">
+      <div class="field" style="flex:1">
+        <label class="field-label">Nombre base de los clips</label>
+        <input class="input" id="exBaseName" placeholder="Ej. Clip A (#)" />
+        <span class="field-hint">Usá <code>#</code> para el número de clip (1, 2, 3…).</span>
+      </div>
+      <button class="btn btn-secondary btn-sm" id="btnApplyBaseName">
+        <svg class="icon icon-sm" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+        Aplicar a todos
+      </button>
+    </div>
+    <label class="switch">
+      <input type="checkbox" id="exSaveIndividually" />
+      <span class="track"><span class="thumb"></span></span>
+      <span>Guardar individualmente (un diálogo por clip, sin ZIP)</span>
+    </label>
+  </div>
+
+  <div class="export-list" id="exportList"></div>
+
+  <div class="export-progress" id="exportProgress" hidden>
+    <div class="ep-row">
+      <span class="ep-label" id="epLabel">Preparando…</span>
+      <span class="ep-count" id="epCount">0 / 0</span>
+    </div>
+    <div class="ep-bar"><div class="ep-fill" id="epFill"></div></div>
+    <div class="ep-sub" id="epSub">—</div>
+  </div>
+
+  <div class="export-actions">
+    <button class="btn btn-ghost btn-lg" id="btnExportJSON">
+      <svg class="icon" viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>
+      Exportar JSON
+    </button>
+    <button class="btn btn-ghost btn-lg" id="btnBackEditor">
+      <svg class="icon" viewBox="0 0 24 24"><polyline points="19 12 5 12 12 5"/><polyline points="5 12 12 19"/></svg>
+      Volver al editor
+    </button>
+    <button class="btn btn-primary btn-lg" id="btnDoExport">
+      <svg class="icon" viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>
+      Exportar
+    </button>
+  </div>
+</section>
+  <!-- PANTALLA 4 · LISTO -->
+  <section class="scr" id="scrDone" hidden>
+    <div class="done-hero">
+      <div class="dh-icon">
+        <svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+      </div>
+      <h2 class="dh-title">Listo</h2>
+      <p class="dh-desc" id="doneDesc">—</p>
+    </div>
+    <div class="done-actions">
+      <button class="btn btn-primary btn-lg" id="btnStartOver">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+        Recortar más videos
+      </button>
+      <a class="btn btn-ghost btn-lg" href="index.html">Volver al taller</a>
+    </div>
+  </section>
+
+</main>
+
+<input type="file" id="fileInput" accept="video/*" multiple
+       style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:auto;" />
+
+<div class="toast-host" id="toastHost"></div>
+
+<div class="ffmpeg-overlay" id="ffmpegOverlay" style="display: none;">
+  <div class="fo-inner">
+    <span class="spinner"></span>
+    <div class="fo-title" id="foTitle">Preparando motor de video…</div>
+    <div class="fo-sub" id="foSub">Solo la primera vez. Después queda cacheado.</div>
+  </div>
+</div>
+
+<input type="file" id="jsonFileInput" accept=".json,application/json" style="display: none;" />
+
+<script src="assets/utils.js"></script>
+<script src="assets/recortes.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/fflate@0.8.2/umd/index.js"></script>
+
+</body>
+</html>
