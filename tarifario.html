@@ -766,7 +766,7 @@
    LOGO: coloca tu archivo en assets/logo.png (PNG con
    transparencia). Si no existe, se usará el "Ae" por defecto.
    ============================================================ */
-const LOGO_URL = "assets/logo.png";
+const LOGO_URL = "logo.png";
 
 /* ============================================================
    DATOS — edita aquí precios y servicios
@@ -1538,6 +1538,7 @@ function buildPrintArea() {
       ? `<h2 class="print-section-title">${escapeHTML(sec.titulo)}</h2>`
       : '';
 
+    // Contenedor rosa para el subtotal de sección (solo si hay múltiples secciones)
     const subtotalHTML = multipleSections
       ? `<div class="print-section-subtotal"><span class="lbl">Subtotal sección</span><span class="val">${fmt(secSubtotal)}</span></div>`
       : '';
@@ -1566,14 +1567,14 @@ function buildPrintArea() {
     ? `<div class="l"><span>Descuento (${d}%)</span><span>− ${fmt(sub - total)}</span></div>`
     : '';
 
-  const brandMark = `<img class="print-brand-logo" src="${LOGO_URL}" alt="" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'"><div class="print-brand-mark" style="display:none">Ae</div>`;
+  const brandMark = `
+    <img src="${LOGO_URL}" class="print-logo-img" alt="Logo" />
+  `;
 
+  // Solo mostramos el cliente, la fecha fue eliminada según tu instrucción
   const metaRows = [];
   if (state.pdfFields.cliente && state.cliente) {
     metaRows.push(`<div class="row"><span class="k">Cliente</span><span class="v">${escapeHTML(state.cliente)}</span></div>`);
-  }
-  if (state.pdfFields.fecha && state.fecha) {
-    metaRows.push(`<div class="row"><span class="k">Fecha</span><span class="v">${formatDate(state.fecha)}</span></div>`);
   }
   if (state.pdfFields.validez && EMPRESA.validez) {
     metaRows.push(`<div class="row"><span class="k">Validez</span><span class="v">${escapeHTML(EMPRESA.validez)}</span></div>`);
@@ -1582,9 +1583,15 @@ function buildPrintArea() {
     ? `<div class="print-meta">${metaRows.join('')}</div>`
     : '';
 
+  // Hipervínculos en contacto
+  const igLink = EMPRESA.web.replace('@', '');
+  // Limpiar el teléfono para WhatsApp (solo números)
+  const waLink = EMPRESA.telefono.replace(/[^0-9]/g, '');
+
   $('#printArea').innerHTML = `
     <div class="print-doc">
 
+      <!-- HEADER ROSA -->
       <header class="print-header">
         <div class="print-brand">
           ${brandMark}
@@ -1595,17 +1602,19 @@ function buildPrintArea() {
             <div class="print-brand-tag">${escapeHTML(EMPRESA.tagline)}</div>
           </div>
         </div>
+    
         <div class="print-contact">
-          <div>${escapeHTML(EMPRESA.email)}</div>
-          <div>${escapeHTML(EMPRESA.web)}</div>
-          <div>${escapeHTML(EMPRESA.telefono)}</div>
+          <div><a href="mailto:${EMPRESA.email}">${EMPRESA.email}</a></div>
+          <div><a href="https://instagram.com/${igLink}" target="_blank">${EMPRESA.web}</a></div>
+          <div><a href="https://wa.me/${waLink}" target="_blank">${EMPRESA.telefono}</a></div>
         </div>
       </header>
 
+      <!-- Título de la cotización -->
       <div class="print-title-block">
         <div class="print-eyebrow">Cotización</div>
         <h1 class="print-title">
-          ${escapeHTML(state.titulo || 'Propuesta y plan de contenido')}
+          ${escapeHTML(state.titulo || 'Propuesta de servicios')}
         </h1>
       </div>
 
@@ -1615,6 +1624,7 @@ function buildPrintArea() {
         ${sectionsHTML}
       </div>
 
+      <!-- TOTALES -->
       <div class="print-totals">
         <div class="l"><span>Subtotal</span><span>${fmt(sub)}</span></div>
         ${descLine}
@@ -1636,7 +1646,6 @@ function buildPrintArea() {
     </div>
   `;
 }
-
 /* ============================================================
    EVENTOS
    ============================================================ */
